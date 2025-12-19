@@ -1,11 +1,13 @@
 import React from 'react';
 import { saveAs } from 'file-saver';
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
+
 const QRModal = ({ qrData, tableNumber, tableId, createdDate, onClose }) => {
   if (!qrData) return null;
 
   const handleDownload = () => {
-    window.location.href = `http://localhost:5000/api/admin/tables/${tableId}/qr/download`;
+    window.location.href = `${baseURL}/tables/${tableId}/qr/download`;
   };
 
   const formattedDate = createdDate 

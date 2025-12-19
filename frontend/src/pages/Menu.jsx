@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
+
 const Menu = () => {
     const [searchParams] = useSearchParams();
     const tableId = searchParams.get('table');
@@ -23,7 +25,7 @@ const Menu = () => {
     const verifyToken = async () => {
         try {
             // Gọi API 
-            const res = await axios.get(`http://localhost:5000/api/menu?tableId=${tableId}&token=${token}`);
+            const res = await axios.get(`${baseURL}/menu?tableId=${tableId}&token=${token}`);
 
             if (res.data.valid) {
                 setTableInfo(res.data.table);
