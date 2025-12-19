@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
+
 const axiosClient = axios.create({
   // Backend server của bạn đang chạy ở port 5000 với prefix /api/admin
-  baseURL: 'http://localhost:5000/api/admin', 
+  baseURL: baseURL, 
   headers: {
     'Content-Type': 'application/json',
   },
