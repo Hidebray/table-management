@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const rawURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
-const baseURL = rawURL.replace(/\/admin$/, '/');
+const baseURL = rawURL.replace(/\/admin\/?$/, '');
 
 const Menu = () => {
     const [searchParams] = useSearchParams();
