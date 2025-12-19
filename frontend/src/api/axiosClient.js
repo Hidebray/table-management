@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
-
+const baseURL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/admin` 
+  : 'http://localhost:5000/api/admin';
+  
 const axiosClient = axios.create({
   // Backend server của bạn đang chạy ở port 5000 với prefix /api/admin
   baseURL: baseURL, 
