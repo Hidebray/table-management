@@ -52,21 +52,22 @@ Built with Client–Server architecture using Node.js (Backend) and React (Front
 ### Database Setup (PostgreSQL)
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE tables (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    table_number VARCHAR(50) NOT NULL UNIQUE,
-    capacity INT CHECK (capacity > 0 AND capacity <= 20),
+    table_number VARCHAR(50) NOT NULL,
+    capacity INT NOT NULL CHECK (capacity > 0 AND capacity <= 20),
     location VARCHAR(100),
     description TEXT,
-    status VARCHAR(20) DEFAULT 'active'
-        CHECK (status IN ('active', 'inactive')),
-    qr_token TEXT,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    qr_token VARCHAR(500),
     qr_token_created_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(table_number)
 );
+
+CREATE INDEX idx_tables_status ON tables(status);
+CREATE INDEX idx_tables_location ON tables(location);
 ```
 
 ---
