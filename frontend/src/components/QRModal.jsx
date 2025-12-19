@@ -1,7 +1,9 @@
 import React from 'react';
 import { saveAs } from 'file-saver';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
+const baseURL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/admin` 
+  : 'http://localhost:5000/api/admin';
 
 const QRModal = ({ qrData, tableNumber, tableId, createdDate, onClose }) => {
   if (!qrData) return null;
