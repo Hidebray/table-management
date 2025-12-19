@@ -1,6 +1,8 @@
 import axiosClient from './axiosClient';
 
-const BASE_ADMIN_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/admin';
+const baseURL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/admin` 
+  : 'http://localhost:5000/api/admin';
 
 const tableApi = {
   getAll: (params) => {
