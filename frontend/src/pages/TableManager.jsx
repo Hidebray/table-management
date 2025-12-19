@@ -1,6 +1,5 @@
-// frontend/src/TableManager.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import tableApi from '../api/tableApi'; // <--- Import đúng file API
 import TableList from '../components/TableList';
 import QRModal from '../components/QRModal';
 import TableModal from '../components/TableModal';
@@ -28,59 +27,68 @@ const TableManager = () => {
   const fetchTables = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({ sortBy });
-      if (filterStatus) params.append('status', filterStatus);
-      if (filterLocation) params.append('location', filterLocation);
+      // Tạo object params chuẩn
+      const params = { sortBy };
+      if (filterStatus) params.status = filterStatus;
+      if (filterLocation) params.location = filterLocation;
 
-      // Sửa lại URL API chuẩn
-      const res = await axios.get(`http://localhost:5000/api/admin/tables?${params.toString()}`);
-      setTables(res.data);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+      // Gọi qua API (Gọn hơn nhiều)
+      const data = await tableApi.getAll(params);
+      setTables(data);
+    } catch (err) { 
+      console.error("Lỗi tải danh sách:", err); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const fetchLocations = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/tables/locations');
-      setAvailableLocations(res.data);
-    } catch (err) { console.error(err); }
+      const data = await tableApi.getLocations();
+      setAvailableLocations(data);
+    } catch (err) { console.error("Lỗi tải location:", err); }
   };
 
   const handleFormSubmit = async (formData) => {
     try {
       if (editingTable) {
-        await axios.put(`http://localhost:5000/api/admin/tables/${editingTable.id}`, formData);
+        await tableApi.update(editingTable.id, formData);
         alert("Đã cập nhật!");
       } else {
-        await axios.post('http://localhost:5000/api/admin/tables', formData);
+        await tableApi.create(formData);
         alert("Đã tạo mới!");
       }
       setIsFormOpen(false);
       fetchTables();
-      fetchLocations(); // Cập nhật lại list location nếu có cái mới
-    } catch (err) { alert(err.response?.data?.error || "Lỗi xử lý"); }
+      fetchLocations(); 
+    } catch (err) { 
+      // axiosClient đã trả về error object, lấy message ra
+      alert(err.response?.data?.error || "Lỗi xử lý"); 
+    }
   };
 
   const handleGenerateQR = async (table) => {
     try {
       setSelectedTableForQR(table);
-      const res = await axios.post(`http://localhost:5000/api/admin/tables/${table.id}/qr/generate`);
-      setQrData(res.data.qrCodeImage);
+      const data = await tableApi.generateQR(table.id);
+      setQrData(data.qrCodeImage);
     } catch (err) { alert("Lỗi tạo QR"); }
   };
 
-  const handleDownloadAll = () => window.location.href = 'http://localhost:5000/api/admin/tables/qr/download-all';
-  const handleDownloadPDF = () => window.location.href = 'http://localhost:5000/api/admin/tables/qr/download-pdf';
+  // Dùng link hằng số từ file api để đảm bảo đồng bộ
+  const handleDownloadAll = () => window.location.href = tableApi.DOWNLOAD_ALL_URL;
+  const handleDownloadPDF = () => window.location.href = tableApi.DOWNLOAD_PDF_URL;
 
   const handleRegenerateAll = async () => {
     if (!window.confirm("⚠️ CẢNH BÁO: Tất cả mã QR cũ sẽ bị vô hiệu hóa. Tiếp tục?")) return;
     try {
-      await axios.post('http://localhost:5000/api/admin/tables/qr/regenerate-all');
+      await tableApi.regenerateAll();
       alert("Đã làm mới thành công!");
       fetchTables();
     } catch (err) { alert("Lỗi hệ thống"); }
   };
 
-  // Tính toán thống kê nhanh
+  // Tính toán thống kê
   const stats = {
     total: tables.length,
     active: tables.filter(t => t.status === 'active').length,
@@ -109,10 +117,10 @@ const TableManager = () => {
           </div>
         </div>
 
-        {/* TOOLBAR (FILTER & ACTIONS) */}
+        {/* TOOLBAR */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-4 justify-between items-center">
-
-          {/* Left: Filters */}
+          
+          {/* Filters */}
           <div className="flex flex-wrap gap-3 w-full lg:w-auto items-center">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -149,9 +157,8 @@ const TableManager = () => {
             </select>
           </div>
 
-          {/* Right: Actions */}
+          {/* Actions */}
           <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
-            {/* Group Download */}
             <div className="inline-flex rounded-lg shadow-sm" role="group">
               <button onClick={handleDownloadAll} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 flex items-center gap-2">
                 <DownloadIcon /> ZIP
@@ -161,7 +168,6 @@ const TableManager = () => {
               </button>
             </div>
 
-            {/* Danger Zone */}
             <button
               onClick={handleRegenerateAll}
               className="px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition flex items-center gap-2"
@@ -171,7 +177,6 @@ const TableManager = () => {
               <span className="hidden md:inline">Reset QR</span>
             </button>
 
-            {/* Refresh Button */}
             <button
               onClick={() => { fetchTables(); fetchLocations(); }}
               className="p-2 text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-emerald-600 transition"
@@ -194,16 +199,15 @@ const TableManager = () => {
           />
         )}
 
-        {/* Primary Action */}
+        {/* Add Button */}
         <div className="flex justify-end mt-4">
-        <button 
-          onClick={() => { setEditingTable(null); setIsFormOpen(true); }}
-          className="px-6 py-3 text-base font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-        >
-          <PlusIcon /> Thêm Bàn Mới
-        </button>
-      </div>
-
+          <button 
+            onClick={() => { setEditingTable(null); setIsFormOpen(true); }}
+            className="px-6 py-3 text-base font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+          >
+            <PlusIcon /> Thêm Bàn Mới
+          </button>
+        </div>
       </div>
 
       <QRModal
