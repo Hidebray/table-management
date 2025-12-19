@@ -9,6 +9,7 @@ function App() {
       <Routes>
         {/* Đường dẫn mặc định hoặc /admin thì vào trang Quản lý */}
         <Route path="/" element={<TableManager />} />
+        <Route path="/index.html" element={<TableManager />} />
         <Route path="/admin" element={<TableManager />} />
         
         {/* Đường dẫn /menu dành cho khách quét QR */}
