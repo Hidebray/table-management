@@ -1,55 +1,31 @@
-# 🍽️ Smart Restaurant – Table Management System
+# 🍽️ Smart Restaurant - Table Management System
 
-A secure table management and QR code generation system for restaurants.  
-Built with Client–Server architecture using Node.js (Backend) and React (Frontend).
+A modern Fullstack Table Management System focusing on QR Code security and Administrator experience (Admin Dashboard). The project uses a **Client-Server** architecture with **RESTful API**.
 
----
-
-## 🚀 Features
-
-### Table Management (CRUD)
-- Create new tables
-  - Prevent duplicate table numbers
-  - Capacity validation (1–20)
-- View table list with status (active / inactive)
-- Automatic sorting by table number
-
-### QR Code & Security
-- Secure QR code generation using JWT (Signed Token)
-- Prevents URL forgery and manual manipulation
-- QR regeneration mechanism
-  - When a new QR is generated, old tokens are invalidated automatically
-- QR utilities
-  - Preview
-  - Download as PNG
-  - Print as PDF
+![Project Status](https://img.shields.io/badge/Status-Completed-success) ![Security](https://img.shields.io/badge/Security-JWT%20Signed-blue) ![Stack](https://img.shields.io/badge/Stack-PERN-orange)
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Key Features
 
-### Backend
-- Node.js
-- Express.js
-- PostgreSQL
-- JWT (JSON Web Token)
-- Libraries
-  - pg
-  - qrcode
-  - cors
-  - dotenv
+### 🛡️ Backend (Node.js + PostgreSQL)
+- **Table Management (CRUD):** Add, Edit, Delete (Soft Delete), Filter by Location/Status.
+- **QR Code Security:**
+  - QR Codes contain **Signed JWT Tokens** (preventing ID guessing/enumeration attacks).
+  - **Regenerate All:** Invalidate all old tokens and issue new ones instantly with a single click (prevents leaks).
+- **Data Export:** Support downloading all QR Codes as a **.ZIP** archive or printing via **.PDF**.
 
-### Frontend
-- React (Vite)
-- Tailwind CSS
-- Axios
-- file-saver
+### 🎨 Frontend (React + Tailwind CSS)
+- **Admin Dashboard:** Professional interface with search, sorting, and pagination.
+- **Clean Architecture:** Separation of concerns between API logic (`api/service`) and UI (`pages/components`).
+- **Interactive UI:** QR Code preview modal, intuitive form validation.
 
 ---
 
-## ⚙️ Installation & Setup
+## 🛠️ Installation & Setup
 
-### Database Setup (PostgreSQL)
+### 1. Database Setup (PostgreSQL)
+Run the following SQL script to create the necessary table and extensions:
 
 ```sql
 CREATE TABLE tables (
@@ -70,9 +46,7 @@ CREATE INDEX idx_tables_status ON tables(status);
 CREATE INDEX idx_tables_location ON tables(location);
 ```
 
----
-
-### Backend Setup
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -104,9 +78,7 @@ Backend URL:
 http://localhost:5000
 ```
 
----
-
-### Frontend Setup
+### 3. Frontend Setup
 
 ```bash
 cd frontend
@@ -122,15 +94,37 @@ http://localhost:5173
 
 ---
 
-## 📡 Backend API Endpoints
+## 📡API Documentation
+Base URL: http://localhost:5000/api
+
+## 1. Table Administration
+
+**Prefix:** `/admin/tables`
+
+| Method | Endpoint        | Description |
+|------|----------------|-------------|
+| GET  | `/`            | Get list of tables <br> **Query:** `?status=active&location=Indoor` |
+| POST | `/`            | Create a new table <br> **Body:** `{ table_number, capacity, location }` |
+| PUT  | `/:id`         | Update table details |
+| PATCH| `/:id/status`  | Change table status (Soft Delete) |
+| GET  | `/locations`   | Get list of available locations |
+
+## 2. QR Code & Security
+
+**Prefix:** `/admin/tables`
 
 | Method | Endpoint | Description |
-|-------|----------|-------------|
-| GET | `/api/tables` | Get all tables (filter by status/location) |
-| POST | `/api/tables` | Create a new table |
-| GET | `/api/tables/:id` | Get table details |
-| PUT | `/api/tables/:id` | Update table information |
-| POST | `/api/tables/:id/qr` | Generate or regenerate secure QR code |
+|------|---------|-------------|
+| POST | `/:id/qr/generate` | Generate a new QR code for a specific table (Updates DB token) |
+| POST | `/qr/regenerate-all` | Reset all QR codes (Generate new tokens for all tables) |
+| GET  | `/qr/download-all` | Download all QR images as a **.ZIP** file |
+| GET  | `/qr/download-pdf` | Download QR codes as a **.PDF** file for printing |
+
+## 3. Customer (Public Routes)
+
+| Method | Endpoint | Description |
+|------|---------|-------------|
+| GET  | `/menu` | Verify QR token and display menu |
 
 ---
 
@@ -139,22 +133,26 @@ http://localhost:5173
 ```text
 table-management/
 ├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── fonts/
-│   ├── middlewares/
-│   ├── routes/
-│   └── server.js
+│   ├── config/             # Database connection
+│   ├── controllers/        # Business logic (CRUD, QR Generation)
+│   ├── routes/             # API Routing
+│   ├── middlewares/        # Input Validation
+│   └── server.js           # Server Entry Point
 │
 └── frontend/
     ├── src/
-    │   ├── components/
-    │   ├── pages/
-    │   ├── App.jsx
-    │   └── main.tsx
-    ├── tailwind.config.js
-    └── package.json
+    │   ├── api/            # API Services (axiosClient, tableApi)
+    │   ├── components/     # UI Components (TableList, Modal, Icons)
+    │   ├── pages/          # Main Pages (TableManager, Menu)
+    │   └── main.jsx        # Frontend Entry Point
+    └── tailwind.config.js  # UI Configuration
 ```
+
+---
+
+## 🚀 Tech Stack
+- Backend: Node.js, Express, PostgreSQL, qrcode (lib), jsonwebtoken (JWT).
+- Frontend: React (Vite), Axios, Tailwind CSS, file-saver.
 
 ---
 
@@ -169,13 +167,3 @@ http://frontend-url/menu?table=UUID&token=JWT_TOKEN
 - JWT token is stored in database field `qr_token`
 - When QR code is regenerated, old tokens are automatically invalidated
 - Ensures secure table identification and prevents QR reuse attacks
-
----
-
-## ✅ Summary
-
-- Secure table management system
-- JWT-protected QR codes
-- Automatic QR invalidation
-- Clean Client–Server architecture
-- Ready for integration with ordering systems
